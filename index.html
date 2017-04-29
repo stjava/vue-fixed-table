@@ -23,6 +23,7 @@
 		.all-table-wrap {
 			width: 100%;
 			position: relative;
+			cursor: default;
 		}
 
 		.all-table-wrap thead th {
@@ -30,13 +31,23 @@
 		}
 
 		.table-style th {
-			border: 1px solid #c2c2c2;
+			color: #657180;
+			font-size: 15px;
+			border: 1px solid #e3e8ee;
+		}
+		.table-style tr:hover{
+			background-color: #ebf7ff;
+		}
+		.table-style tbody tr:nth-child(even) {
+			background: #f5f7f9;
 		}
 
 		.table-style td {
-			padding: 3px 8px;
+			padding:8px 8px;
+			color: #657180;
+			font-size: 13px;
 			box-sizing: border-box;
-			border: 1px solid #c2c2c2;
+			border: 1px solid #e3e8ee;
 		}
 
 		.table-wrap {
@@ -181,7 +192,7 @@
 				</table>
 			</div>
 			<!--固定左侧的数据-->
-			<div class="fixLeftCol-table-wrap" ref="tableLeft" :style="{height:tableHeight-10+'px'}">
+			<div class="fixLeftCol-table-wrap" ref="tableLeft" :style="{height:tableHeight-9+'px'}">
 				<table class="table-style">
 					<thead>
 						<tr>
@@ -243,7 +254,7 @@
 			</div>
 			<!--固定右侧-->
 
-			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableHeight-10+'px'}">
+			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableHeight-9+'px'}">
 				<table class="table-style">
 					<thead>
 						<tr>
@@ -414,7 +425,7 @@
 				}
 				setTimeout(() => {
 					this.tableData = tableData;
-				}, 2000);
+				}, 500);
 			}
 		}
 	});
