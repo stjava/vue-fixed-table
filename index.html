@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="./css/init.css">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+	<style>
+		html,
+		body {
+			height: auto
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			box-sizing: border-box
+		}
+
+		.all-table-wrap {
+			width: 100%;
+			position: relative;
+		}
+
+		.all-table-wrap thead th {
+			height: 40px;
+		}
+
+		.table-style th {
+			border: 1px solid #c2c2c2;
+		}
+
+		.table-style td {
+			padding: 3px 8px;
+			box-sizing: border-box;
+			border: 1px solid #c2c2c2;
+		}
+
+		.table-wrap {
+			width: 100%;
+			word-break: keep-all;
+			white-space: nowrap;
+			overflow: auto;
+			position: relative;
+		}
+		/* 表头固定 */
+
+		.fixRow-table {
+			background-color: #fff;
+			position: relative;
+			overflow: hidden;
+			margin-right: 10px;
+			z-index: 22;
+		}
+		/*真实表格*/
+
+		.table-t {
+			width: 100%;
+			/*height: 100%;*/
+		}
+
+		.table-t thead th {
+			padding: 0 8px;
+			border-bottom: none;
+		}
+		/*滚动条的设置*/
+
+		.table-t tbody tr:first-child>td {
+			border-top: none;
+		}
+
+		.table-wrap::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+			background-color: #f5f5f5;
+		}
+
+		.table-wrap::-webkit-scrollbar-track {
+			-webkit-box-shadow: inset 0 1 6px rgba(0, 0, 0, .3);
+			border-radius: 5px;
+			background-color: #f5f5f5;
+		}
+
+		.table-wrap::-webkit-scrollbar-thumb {
+			/* 滚动条中间滚动的颜色 */
+			border-radius: 5px;
+			-webkit-box-shadow: inset 0 1 6px rgba(0, 0, 0, .3);
+			background-color: #d2d2d2;
+		}
+
+		.table-wrap::-webkit-scrollbar-corner {
+			/* 滚动条中间滚动的颜色 */
+			background-color: #f5f5f5;
+		}
+
+		.table-fix-tbody-wrap {
+			top: -40px;
+			position: relative;
+		}
+
+		.fixLeftCol-table-wrap-title {
+			position: absolute;
+			top: 0;
+			background-color: #fff;
+			z-index: 99;
+		}
+		/*表体左侧*/
+
+		.fixLeftCol-table-wrap {
+			overflow: hidden;
+			position: absolute;
+			background-color: #fff;
+			z-index: 33;
+			top: 0;
+			box-shadow: 2px 0 6px -2px rgba(0, 0, 0, .2);
+		}
+
+		.fixRightCol-table-wrap-title {
+			position: absolute;
+			top: 0;
+			right: 10px;
+			background-color: #fff;
+			z-index: 99;
+		}
+
+		.fixRightCol-table-wrap {
+			overflow: hidden;
+			position: absolute;
+			background-color: #fff;
+			z-index: 33;
+			top: 0;
+			right: 10px;
+			box-shadow: -2px 0 6px -2px rgba(0, 0, 0, .2);
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div style="width:1000px">
+			<vue-fix-table :table-Height="tableHeight" :table-Data="tableData" :table-Columns="tableColumns">
+			</vue-fix-table>
+		</div>
+
+	</div>
+
+</body>
+<template id="vue-fix-table">
+	<!--表格-->
+	<div class="all-table-wrap" :style="{height:tableHeight+'px'}">
+		<!--固定顶部表头-->
+		<div class="fixRow-table" ref="tableTop">
+			<table class="table-style">
+				<thead>
+					<tr>
+						<th v-for="col in tableColumns">
+							<div :style="{width:col.width+'px'}">
+								{{col.title}}
+							</div>
+						</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+		<!--固定左侧表头-->
+		<template v-if="tableData.length>0">
+			<div class="fixLeftCol-table-wrap-title">
+				<table class="table-style">
+					<thead>
+						<tr>
+							<th v-for="th in tableColumnsFix.fixLeftCol">
+								<div :style="{width:th.width+'px'}">
+									{{th.title}}
+								</div>
+							</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<!--固定左侧的数据-->
+			<div class="fixLeftCol-table-wrap" ref="tableLeft" :style="{height:tableHeight-10+'px'}">
+				<table class="table-style">
+					<thead>
+						<tr>
+							<th v-for="th in  tableColumnsFix.fixLeftCol">
+								<div :style="{width:th.width+'px'}">
+									{{th.title}}
+								</div>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(rowData,index) in tableData">
+							<td v-for="th in tableColumnsFix.fixLeftCol">{{rowData[th.key]}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</template>
+
+		<!--真实表格-->
+		<div class="table-fix-tbody-wrap">
+			<div class="table-wrap" @scroll="tableScroll" ref="table" :style="{height:tableHeight+'px'}">
+				<table class="table-style table-t" ref="tableTrue">
+					<thead>
+						<tr>
+							<th v-for="col in tableColumnsFix.allCol" style="min-width:120px">
+								{{col.title}}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!--如果没有数据-->
+						<template v-if="tableData.length==0">
+							<tr>
+								<td :colspan="tableColumnsFix.allCol.length" style="text-align:center">暂无数据</td>
+							</tr>
+						</template>
+						<tr v-for="(rowData,index) in tableData" @dblclick="dblclick(rowData,index)">
+							<td v-for="data in rowData">{{data}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!--固定右侧表头-->
+		<template v-if="tableData.length>0">
+			<div class="fixRightCol-table-wrap-title">
+				<table class="table-style">
+					<thead>
+						<tr>
+							<th v-for="th in tableColumnsFix.fixRightCol">
+								<div :style="{width:th.width+'px'}">
+									{{th.title}}
+								</div>
+							</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<!--固定右侧-->
+
+			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableHeight-10+'px'}">
+				<table class="table-style">
+					<thead>
+						<tr>
+							<th v-for="th in  tableColumnsFix.fixRightCol">
+								<div :style="{width:th.width+'px'}">
+									{{th.title}}
+								</div>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(rowData,index) in tableData">
+							<td v-for="th in tableColumnsFix.fixRightCol">{{rowData[th.key]}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</template>
+		<!--end -->
+	</div>
+</template>
+<script src="http://cdn.bootcss.com/vue/2.1.10/vue.js"></script>
+<script>
+	"use strict"
+	Vue.component('vue-fix-table', {
+		template: '#vue-fix-table',
+		props: {
+			tableHeight: Number, //表格高度
+			tableData: Array, //表格数据
+			tableColumns: Array
+		},
+		watch: {
+			//表格数据更新完毕，固定表格
+			tableData: function (val, oldVal) {
+				this.$nextTick(function () {
+					this.checkFix();
+				})
+			},
+			tableColumns: function (val, oldVal) {
+				this.$nextTick(function () {
+					this.checkFix();
+				})
+			}
+		},
+		mounted: function () {
+			this.checkFix();
+			var self = this;
+			window.addEventListener('resize', function () {
+				self.checkFix();
+			});
+		},
+		computed: {
+			// 固定列
+			tableColumnsFix: function () {
+				var fixLeftCol = [];
+				var fixRightCol = [];
+				var unFixCol = [];
+				for (var i = 0; i < this.tableColumns.length; i++) {
+					var thisData = this.tableColumns[i];
+					if (thisData.fix && thisData.fix == 'left') {
+						fixLeftCol.push(thisData);
+					} else if (thisData.fix && thisData.fix == 'right') {
+						fixRightCol.push(thisData);
+					} else {
+						unFixCol.push(thisData);
+					}
+				}
+				unFixCol.unshift.apply(unFixCol, fixLeftCol);
+				unFixCol.push.apply(unFixCol, fixRightCol);
+				return {
+					fixLeftCol: fixLeftCol,
+					fixRightCol: fixRightCol,
+					allCol: unFixCol
+				};
+			}
+		},
+		methods: {
+			// 固定左侧
+			tableScroll: function () {
+				requestAnimationFrame(this.tableScrollMethod);
+			},
+			tableScrollMethod: function () {
+				// 表头滚动
+				this.$refs.tableTop.scrollLeft = this.$refs.table.scrollLeft;
+				// 左侧滚动
+				this.$refs.tableLeft.scrollTop = this.$refs.table.scrollTop;
+				//右侧滚动
+				this.$refs.tableRight.scrollTop = this.$refs.table.scrollTop;
+			},
+			checkFix: function () {
+				var ths = this.$refs.tableTrue.querySelectorAll('th');
+				for (var i = 0; i < this.tableColumns.length; i++) {
+					//设置每个列的宽度
+					this.$set(this.tableColumns[i], 'width', ths.item(i).clientWidth);
+				}
+			},
+			dblclick: function (rowData, index) {
+				this.$emit('t-dblclick', rowData, index)
+			}
+		}
+	})
+	var app = new Vue({
+		el: '#app',
+		data: {
+			tableHeight: 300,
+			tableColumns: [{
+				title: '姓名',
+				key: 'name',
+				fix: 'left' //固定
+			}, {
+				title: '手机',
+				key: 'phone',
+				// fix: 'left'
+			}, {
+				title: '年龄',
+				key: 'age'
+			}, {
+				title: '地址1',
+				key: 'address1'
+			}, {
+				title: '地址2',
+				key: 'address2'
+			}, {
+				title: '地址3',
+				key: 'address3'
+			}, {
+				title: '地址4',
+				key: 'address4'
+			}, {
+				title: '地址5',
+				key: 'address5'
+			}, {
+				title: '地址6',
+				key: 'address6'
+			}, {
+				title: '地址7',
+				key: 'address7'
+			}, {
+				title: '地址8',
+				key: 'address8',
+				fix: 'right'
+			}],
+			tableData: [],
+		},
+		mounted: function () {
+			this.getData();
+			// 检查表格单元格宽度
+		},
+		methods: {
+			getData: function () {
+				// 模拟获取表格数据
+				var tableData = [];
+				for (var i = 0; i < 100; i++) {
+					var data = {
+						name: 'st' + i,
+						phone: '15502515852',
+						age: '22',
+						address1: '地址1**********************',
+						address2: '地址2',
+						address3: '地址3',
+						address4: '地址4',
+						address5: '地址5',
+						address6: '出卖我的爱 逼着我离开 最后知道真相的我眼泪掉下来 出卖我的爱 你背了良心债 就算付出再多感情也再买不回来',
+						address7: '当初是你要分开 分开就分开',
+						address8: '现在又要用真爱把我哄回来 '
+					};
+					tableData.push(data);
+				}
+				setTimeout(() => {
+					this.tableData = tableData;
+				}, 2000);
+			}
+		}
+	});
+</script>
+
+</html>
