@@ -17,7 +17,7 @@
 			margin: 0;
 			padding: 0;
 			border: 0;
-			box-sizing: border-box
+			box-sizing: border-box;
 		}
 
 		.all-table-wrap {
@@ -27,6 +27,7 @@
 		}
 
 		.all-table-wrap thead th {
+			background-color: #f5f7f9;
 			height: 40px;
 		}
 
@@ -36,12 +37,8 @@
 			border: 1px solid #e3e8ee;
 		}
 
-		.table-style tbody tr:hover {
-			background-color: #ebf7ff;
-		}
-
 		.tr-hover {
-			background-color: #ebf7ff;
+			background-color: #ebf7ff !important;
 		}
 
 		.table-style tbody tr:nth-child(even) {
@@ -76,7 +73,6 @@
 
 		.table-t {
 			width: 100%;
-			/*height: 100%;*/
 		}
 
 		.table-t thead th {
@@ -210,7 +206,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}">
+						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}" @mouseover="trHover(index)" @mouseout="trOut">
 							<td v-for="th in tableColumnsFix.fixLeftCol">{{rowData[th.key]}}</td>
 						</tr>
 					</tbody>
@@ -236,7 +232,8 @@
 								<td :colspan="tableColumnsFix.allCol.length" style="text-align:center">暂无数据</td>
 							</tr>
 						</template>
-						<tr v-for="(rowData,index) in tableData" @dblclick="dblclick(rowData,index)" @mouseover="trHover(index)">
+						<tr v-for="(rowData,index) in tableData" @dblclick="dblclick(rowData,index)" :class="{'tr-hover':nowHover==index}" @mouseover="trHover(index)"
+						    @mouseout="trOut">
 							<td v-for="col in tableColumnsFix.allCol">{{rowData[col.key]}}</td>
 						</tr>
 					</tbody>
@@ -271,7 +268,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}">
+						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}" @mouseover="trHover(index)" @mouseout="trOut">
 							<td v-for="th in tableColumnsFix.fixRightCol">{{rowData[th.key]}}</td>
 						</tr>
 					</tbody>
@@ -289,11 +286,11 @@
 		props: {
 			tableHeight: Number, //表格高度
 			tableData: Array, //表格数据
-			tableColumns: Array	//表格表头
+			tableColumns: Array //表格表头
 		},
 		data: function () {
 			return {
-				nowHover: 0	//当前经过的行 
+				nowHover: -1 //当前经过的行 
 			}
 		},
 		watch: {
@@ -325,9 +322,9 @@
 				var unFixCol = [];
 				for (var i = 0; i < this.tableColumns.length; i++) {
 					var thisData = this.tableColumns[i];
-					if (thisData.fix && thisData.fix == 'left') {
+					if (thisData.fixed && thisData.fixed == 'left') {
 						fixLeftCol.push(thisData);
-					} else if (thisData.fix && thisData.fix == 'right') {
+					} else if (thisData.fixed && thisData.fixed == 'right') {
 						fixRightCol.push(thisData);
 					} else {
 						unFixCol.push(thisData);
@@ -336,9 +333,9 @@
 				unFixCol.unshift.apply(unFixCol, fixLeftCol);
 				unFixCol.push.apply(unFixCol, fixRightCol);
 				return {
-					fixLeftCol: fixLeftCol,	//固定在左侧
-					fixRightCol: fixRightCol,//固定在右侧
-					allCol: unFixCol	//固定表头
+					fixLeftCol: fixLeftCol, //固定在左侧
+					fixRightCol: fixRightCol, //固定在右侧
+					allCol: unFixCol //固定表头
 				};
 			}
 		},
@@ -346,6 +343,7 @@
 			// 固定左侧
 			tableScroll: function () {
 				requestAnimationFrame(this.tableScrollMethod);
+				// this.tableScrollMethod();
 			},
 			tableScrollMethod: function () {
 				// 表头滚动
@@ -369,6 +367,9 @@
 			// Hover改变事件
 			trHover: function (index) {
 				this.nowHover = index;
+			},
+			trOut: function () {
+				this.nowHover = -1;
 			}
 		}
 	})
@@ -381,18 +382,18 @@
 			tableColumns: [{
 				title: '姓名',
 				key: 'name',
-				// fix: 'left' //固定
+				// fixed: 'left' //固定
 			}, {
 				title: '手机',
 				key: 'phone',
-				// fix: 'left'
+				// fixed: 'left'
 			}, {
 				title: '年龄',
 				key: 'age'
 			}, {
 				title: '地址1',
 				key: 'address1',
-				fix: 'left'
+				fixed: 'left'
 			}, {
 				title: '地址2',
 				key: 'address2'
@@ -411,11 +412,11 @@
 			}, {
 				title: '地址7',
 				key: 'address7',
-				fix: 'right'
+				fixed: 'right'
 			}, {
 				title: '地址8',
 				key: 'address8',
-				// fix: 'right'
+				// fixed: 'right'
 			}],
 			tableData: [],
 		},
@@ -431,7 +432,7 @@
 						name: 'st' + i,
 						phone: '15502515852',
 						age: '22',
-						address1: '地址1**********************',
+						address1: '地址1**********************' + i,
 						address2: '地址2',
 						address3: '地址3',
 						address4: '地址4',
