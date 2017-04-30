@@ -33,7 +33,7 @@
 
 		.table-style th {
 			color: #657180;
-			font-size: 15px;
+			font-size: 13px;
 			border: 1px solid #e3e8ee;
 		}
 
@@ -48,7 +48,8 @@
 		.table-style td {
 			padding: 8px 8px;
 			color: #657180;
-			font-size: 13px;
+			font-size: 12px;
+			text-align: center;
 			box-sizing: border-box;
 			border: 1px solid #e3e8ee;
 		}
@@ -90,6 +91,11 @@
 			height: 10px;
 			background-color: #f5f5f5;
 		}
+		/*.table-wrap:hover::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+			background-color: #f5f5f5;
+		}*/
 
 		.table-wrap::-webkit-scrollbar-track {
 			-webkit-box-shadow: inset 0 1 6px rgba(0, 0, 0, .3);
@@ -130,6 +136,10 @@
 			top: 0;
 			box-shadow: 2px 0 6px -2px rgba(0, 0, 0, .2);
 		}
+		/*
+		.fixLeftCol-table-wrap tr {
+			box-shadow: 2px 0 6px -2px rgba(0, 0, 0, .2);
+		}*/
 
 		.fixRightCol-table-wrap-title {
 			position: absolute;
@@ -147,6 +157,11 @@
 			top: 0;
 			right: 10px;
 			box-shadow: -2px 0 6px -2px rgba(0, 0, 0, .2);
+		}
+		/*当数据不是特别多，右边没有滚动条时*/
+
+		.no-left-scroll {
+			right: 0;
 		}
 	</style>
 </head>
@@ -179,7 +194,7 @@
 			</table>
 		</div>
 		<!--固定左侧表头-->
-		<template v-if="tableData.length>0">
+		<template v-if="(tableData.length>0&&tableColumnsFix.fixLeftCol.length>0)">
 			<div class="fixLeftCol-table-wrap-title">
 				<table class="table-style">
 					<thead>
@@ -194,7 +209,7 @@
 				</table>
 			</div>
 			<!--固定左侧的数据-->
-			<div class="fixLeftCol-table-wrap" ref="tableLeft" :style="{height:tableHeight-9+'px'}">
+			<div class="fixLeftCol-table-wrap" ref="tableLeft" :style="{height:tableFixHeight}">
 				<table class="table-style">
 					<thead>
 						<tr>
@@ -241,8 +256,8 @@
 			</div>
 		</div>
 		<!--固定右侧表头-->
-		<template v-if="tableData.length>0">
-			<div class="fixRightCol-table-wrap-title">
+		<template v-if="(tableData.length>0&&tableColumnsFix.fixRightCol.length>0)">
+			<div class="fixRightCol-table-wrap-title" :class="{'no-left-scroll':noLeftScroll}">
 				<table class="table-style">
 					<thead>
 						<tr>
@@ -256,7 +271,7 @@
 				</table>
 			</div>
 			<!--固定右侧-->
-			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableHeight-9+'px'}">
+			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableFixHeight}" :class="{'no-left-scroll':noLeftScroll}">
 				<table class="table-style">
 					<thead>
 						<tr>
@@ -290,6 +305,8 @@
 		},
 		data: function () {
 			return {
+				noLeftScroll: '',
+				tableFixHeight: '0px',
 				nowHover: -1 //当前经过的行 
 			}
 		},
@@ -298,16 +315,19 @@
 			tableData: function (val, oldVal) {
 				this.$nextTick(function () {
 					this.checkFix();
+					this.CalcTableFixHeight();
 				})
 			},
 			tableColumns: function (val, oldVal) {
 				this.$nextTick(function () {
 					this.checkFix();
+					this.CalcTableFixHeight();
 				})
 			}
 		},
 		mounted: function () {
 			this.checkFix();
+			this.CalcTableFixHeight();
 			//监听窗口改变事件
 			var self = this;
 			window.addEventListener('resize', function () {
@@ -358,6 +378,17 @@
 				for (var i = 0; i < this.tableColumns.length; i++) {
 					//设置每个列的宽度
 					this.$set(this.tableColumnsFix.allCol[i], 'width', ths.item(i).clientWidth);
+				}
+			},
+			//计算表格高度
+			CalcTableFixHeight: function () {
+				if (this.$refs.tableTrue.clientHeight <= this.tableHeight) {
+					//当表格数据不足以充满总高度
+					this.noLeftScroll = true;
+					this.tableFixHeight = this.$refs.tableTrue.clientHeight + 'px';
+				} else {
+					this.noLeftScroll = false;
+					this.tableFixHeight = this.tableHeight - 10 + 'px';
 				}
 			},
 			// 双击事件
@@ -427,7 +458,7 @@
 			getData: function () {
 				// 模拟获取表格数据
 				var tableData = [];
-				for (var i = 0; i < 100; i++) {
+				for (var i = 0; i < 2; i++) {
 					var data = {
 						name: 'st' + i,
 						phone: '15502515852',
