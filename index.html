@@ -349,11 +349,11 @@
 			},
 			tableScrollMethod: function () {
 				// 表头滚动
-				this.$refs.tableTop.scrollLeft = this.$refs.table.scrollLeft;
+				this.$refs.tableTop && (this.$refs.tableTop.scrollLeft = this.$refs.table.scrollLeft);
 				// 左侧滚动
-				this.$refs.tableLeft.scrollTop = this.$refs.table.scrollTop;
+				this.$refs.tableLeft && (this.$refs.tableLeft.scrollTop = this.$refs.table.scrollTop);
 				//右侧滚动
-				this.$refs.tableRight.scrollTop = this.$refs.table.scrollTop;
+				this.$refs.tableRight && (this.$refs.tableRight.scrollTop = this.$refs.table.scrollTop);
 			},
 			checkFix: function () {
 				var ths = this.$refs.tableTrue.querySelectorAll('th');
