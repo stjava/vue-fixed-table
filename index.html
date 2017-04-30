@@ -35,15 +35,21 @@
 			font-size: 15px;
 			border: 1px solid #e3e8ee;
 		}
-		.table-style tr:hover{
+
+		.table-style tbody tr:hover {
 			background-color: #ebf7ff;
 		}
+
+		.tr-hover {
+			background-color: #ebf7ff;
+		}
+
 		.table-style tbody tr:nth-child(even) {
 			background: #f5f7f9;
 		}
 
 		.table-style td {
-			padding:8px 8px;
+			padding: 8px 8px;
 			color: #657180;
 			font-size: 13px;
 			box-sizing: border-box;
@@ -152,7 +158,7 @@
 <body>
 	<div id="app">
 		<div style="width:1000px">
-			<vue-fix-table :table-Height="tableHeight" :table-Data="tableData" :table-Columns="tableColumns">
+			<vue-fix-table :table-Height="tableHeight" :table-Data="tableData" :table-Columns="tableColumns" @t-dblclick="tableClick">
 			</vue-fix-table>
 		</div>
 
@@ -167,7 +173,7 @@
 			<table class="table-style">
 				<thead>
 					<tr>
-						<th v-for="col in tableColumns">
+						<th v-for="col in tableColumnsFix.allCol">
 							<div :style="{width:col.width+'px'}">
 								{{col.title}}
 							</div>
@@ -204,7 +210,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(rowData,index) in tableData">
+						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}">
 							<td v-for="th in tableColumnsFix.fixLeftCol">{{rowData[th.key]}}</td>
 						</tr>
 					</tbody>
@@ -230,8 +236,8 @@
 								<td :colspan="tableColumnsFix.allCol.length" style="text-align:center">暂无数据</td>
 							</tr>
 						</template>
-						<tr v-for="(rowData,index) in tableData" @dblclick="dblclick(rowData,index)">
-							<td v-for="data in rowData">{{data}}</td>
+						<tr v-for="(rowData,index) in tableData" @dblclick="dblclick(rowData,index)" @mouseover="trHover(index)">
+							<td v-for="col in tableColumnsFix.allCol">{{rowData[col.key]}}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -253,12 +259,11 @@
 				</table>
 			</div>
 			<!--固定右侧-->
-
 			<div class="fixRightCol-table-wrap" ref="tableRight" :style="{height:tableHeight-9+'px'}">
 				<table class="table-style">
 					<thead>
 						<tr>
-							<th v-for="th in  tableColumnsFix.fixRightCol">
+							<th v-for="th in tableColumnsFix.fixRightCol">
 								<div :style="{width:th.width+'px'}">
 									{{th.title}}
 								</div>
@@ -266,7 +271,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(rowData,index) in tableData">
+						<tr v-for="(rowData,index) in tableData" :class="{'tr-hover':nowHover==index}">
 							<td v-for="th in tableColumnsFix.fixRightCol">{{rowData[th.key]}}</td>
 						</tr>
 					</tbody>
@@ -284,7 +289,12 @@
 		props: {
 			tableHeight: Number, //表格高度
 			tableData: Array, //表格数据
-			tableColumns: Array
+			tableColumns: Array	//表格表头
+		},
+		data: function () {
+			return {
+				nowHover: 0	//当前经过的行 
+			}
 		},
 		watch: {
 			//表格数据更新完毕，固定表格
@@ -301,13 +311,14 @@
 		},
 		mounted: function () {
 			this.checkFix();
+			//监听窗口改变事件
 			var self = this;
 			window.addEventListener('resize', function () {
 				self.checkFix();
 			});
 		},
 		computed: {
-			// 固定列
+			// 固定列的数据
 			tableColumnsFix: function () {
 				var fixLeftCol = [];
 				var fixRightCol = [];
@@ -325,9 +336,9 @@
 				unFixCol.unshift.apply(unFixCol, fixLeftCol);
 				unFixCol.push.apply(unFixCol, fixRightCol);
 				return {
-					fixLeftCol: fixLeftCol,
-					fixRightCol: fixRightCol,
-					allCol: unFixCol
+					fixLeftCol: fixLeftCol,	//固定在左侧
+					fixRightCol: fixRightCol,//固定在右侧
+					allCol: unFixCol	//固定表头
 				};
 			}
 		},
@@ -348,14 +359,21 @@
 				var ths = this.$refs.tableTrue.querySelectorAll('th');
 				for (var i = 0; i < this.tableColumns.length; i++) {
 					//设置每个列的宽度
-					this.$set(this.tableColumns[i], 'width', ths.item(i).clientWidth);
+					this.$set(this.tableColumnsFix.allCol[i], 'width', ths.item(i).clientWidth);
 				}
 			},
+			// 双击事件
 			dblclick: function (rowData, index) {
 				this.$emit('t-dblclick', rowData, index)
+			},
+			// Hover改变事件
+			trHover: function (index) {
+				this.nowHover = index;
 			}
 		}
 	})
+
+
 	var app = new Vue({
 		el: '#app',
 		data: {
@@ -363,7 +381,7 @@
 			tableColumns: [{
 				title: '姓名',
 				key: 'name',
-				fix: 'left' //固定
+				// fix: 'left' //固定
 			}, {
 				title: '手机',
 				key: 'phone',
@@ -373,7 +391,8 @@
 				key: 'age'
 			}, {
 				title: '地址1',
-				key: 'address1'
+				key: 'address1',
+				fix: 'left'
 			}, {
 				title: '地址2',
 				key: 'address2'
@@ -391,17 +410,17 @@
 				key: 'address6'
 			}, {
 				title: '地址7',
-				key: 'address7'
+				key: 'address7',
+				fix: 'right'
 			}, {
 				title: '地址8',
 				key: 'address8',
-				fix: 'right'
+				// fix: 'right'
 			}],
 			tableData: [],
 		},
 		mounted: function () {
 			this.getData();
-			// 检查表格单元格宽度
 		},
 		methods: {
 			getData: function () {
@@ -426,7 +445,10 @@
 				setTimeout(() => {
 					this.tableData = tableData;
 				}, 500);
-			}
+			},
+			tableClick: function (data, index) {
+				console.log(data);
+			},
 		}
 	});
 </script>
