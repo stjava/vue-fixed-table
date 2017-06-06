@@ -3,3 +3,4 @@
  （A fixed table header and column based on Vue）
 ![image](https://github.com/stjava/vue-fixed-table/blob/master/img/1.png)
 ![image](https://github.com/stjava/vue-fixed-table/blob/master/img/2.png)
+---
